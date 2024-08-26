@@ -6,12 +6,36 @@ document.addEventListener('DOMContentLoaded', () => {
     let btn_copy = document.querySelector("#copy");
     let error_message = document.querySelector(".form-input__menssage small");
 
+    async function processFormData(action, chain) {
+        try {
+            const response = await fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ chain, accion: action })
+            });
+
+            if (!response.ok) {
+                throw new Error('Error en la solicitud');
+            }
+
+            const result = await response.json();
+            return result.result;
+        } catch (error) {
+            console.error('Error:', error);
+            return 'Error al procesar la solicitud';
+        }
+    }
+
     function validateInput(input) {
         const regex = /^[a-z\s]+$/;
         return regex.test(input);
     }
 
-    myForm.addEventListener("submit", function(e) {
+    myForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
         let btn = e.submitter.dataset.accion;
         let data = Object.fromEntries(new FormData(e.target));
         let inputText = data.chain.trim();
@@ -20,25 +44,19 @@ document.addEventListener('DOMContentLoaded', () => {
             error_message.textContent = "Solo debe contener letras minúsculas y espacios.";
             form_ouput.classList.remove("active");
             form_ouput__menssage.classList.remove("active");
-            e.preventDefault();
             return;
         } else {
             error_message.textContent = "";
         }
 
-        if (btn == "encrypt") {
-            form_ouput.classList.remove("active");
-            form_ouput__menssage.classList.add("active");
-            p.innerHTML = encrypt(data);
-        } else if (btn == "decrypt") {
-            form_ouput.classList.remove("active");
-            form_ouput__menssage.classList.add("active");
-            p.innerHTML = decrypt(data);
-        }
-        e.preventDefault();
+        let result = await processFormData(btn, inputText);
+
+        form_ouput.classList.remove("active");
+        form_ouput__menssage.classList.add("active");
+        p.innerHTML = result;
     });
 
-    btn_copy.addEventListener("click", function(e) {
+    btn_copy.addEventListener("click", function() {
         let range = document.createRange();
         range.selectNode(p);
         let selection = window.getSelection();
@@ -47,42 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.execCommand('copy');
         selection.removeAllRanges();
 
-        p.innerHTML = "Elemento copiado";
+        document.querySelector('.confirmation-message').style.display = 'block';
         setTimeout(() => {
-            p.innerHTML = ""; 
-            form_ouput__menssage.classList.remove("active");
-            form_ouput.classList.add("active");
-        }, 100000); 
-
+            document.querySelector('.confirmation-message').style.display = 'none';
+        }, 2000);
     });
-
-    function encrypt(object) {
-        let word = object.chain.split(" ");
-        let convertion = word.map((value) => {
-            value = value.split('');
-            return value.map((caracter) => {
-                if (caracter == "e") return "enter";
-                else if (caracter == "i") return "imes";
-                else if (caracter == "a") return "ai";
-                else if (caracter == "o") return "ober";
-                else if (caracter == "u") return "ufat";
-                else return caracter;
-            }).join("");
-        }).join(" ");
-        return convertion;
-    }
-
-    // Función para descifrar
-    function decrypt(object) {
-        let word = object.chain.split(" ");
-        let convertion = word.map((value) => {
-            value = value.replace(/enter/gi, "e");
-            value = value.replace(/imes/gi, "i");
-            value = value.replace(/ai/gi, "a");
-            value = value.replace(/ober/gi, "o");
-            value = value.replace(/ufat/gi, "u");
-            return value;
-        }).join(" ");
-        return convertion;
-    }
 });
