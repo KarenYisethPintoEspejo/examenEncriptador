@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         p.innerHTML = result;
     });
 
-    btn_copy.addEventListener("click", function() {
+    btn_copy.addEventListener("click", function(e) {
         let range = document.createRange();
         range.selectNode(p);
         let selection = window.getSelection();
@@ -65,9 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.execCommand('copy');
         selection.removeAllRanges();
 
-        document.querySelector('.confirmation-message').style.display = 'block';
+        p.innerHTML = "Elemento copiado";
         setTimeout(() => {
-            document.querySelector('.confirmation-message').style.display = 'none';
-        }, 2000);
+            p.innerHTML = ""; 
+            form_ouput__menssage.classList.remove("active");
+            form_ouput.classList.add("active");
+        }, 100000); 
+
     });
 });
