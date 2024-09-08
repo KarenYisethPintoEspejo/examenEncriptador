@@ -7,7 +7,7 @@ app.use(express.json());
 
 const config = {
     port: process.env.EXPRESS_PORT || 3000,
-    host: process.env.EXPRESS_HOST || 'localhost',
+    host: process.env.EXPRESS_HOST || '0.0.0.0',
     static:process.env.EXPRESS_STATIC
 };
 
@@ -21,6 +21,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(config.port, config.host, () => {
+app.listen(config.port, '0.0.0.0', () => {
     console.log(`http://${config.host}:${config.port}`);
 });
